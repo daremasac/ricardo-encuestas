@@ -1,0 +1,297 @@
+{% extends 'base.html' %}
+{% load dict_utils %} 
+{% block content %}
+
+<div class="max-w-5xl mx-auto py-10 px-4 sm:px-6 mt-[20px] md:mt-0">
+
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4 no-print">
+        <div>
+            <h1 class=" text-[14px] md:text-2xl font-bold text-gray-900 flex items-center gap-2">
+                📂 Expediente N° {{ ficha.id }}
+                {% if ficha.nivel_riesgo == 'RIESGO BAJO' %}
+                <span
+                    class="px-3 py-1 rounded-full text-xs font-bold bg-green-100 text-green-800 border border-green-200">BAJO</span>
+                {% elif ficha.nivel_riesgo == 'RIESGO CRÍTICO' %}
+                <span
+                    class="px-3 py-1 rounded-full text-xs font-bold bg-red-100 text-red-800 border border-red-200 animate-pulse">CRÍTICO</span>
+                {% else %}
+                <span
+                    class="px-3 py-1 rounded-full text-xs font-bold bg-yellow-100 text-yellow-800 border border-yellow-200">
+                    {{ficha.nivel_riesgo }}</span>
+                {% endif %}
+            </h1>
+            <p class="text-[12px] md:text-sm text-gray-500 mt-1">
+                Registrado por <b>{{ ficha.usuario_registra|title }}</b> el
+                {{ ficha.fecha_registro|date:"d M Y, h:i a"}}
+            </p>
+        </div>
+
+        <div class="flex gap-3 text-[12px] md:text-sm">
+            <button onclick="history.back()"
+                class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition inline-flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                Volver
+            </button>
+            <button onclick="window.print()"
+                class="px-4 py-2 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 shadow-sm transition flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z">
+                    </path>
+                </svg>
+                Imprimir / PDF
+            </button>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-6 text-center divide-x divide-gray-100">
+            <div>
+                <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Puntaje Total</p>
+                <p class="text-3xl font-extrabold text-blue-900 mt-2">{{ ficha.puntaje_total }}</p>
+            </div>
+            <div>
+                <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Edad</p>
+                <p class="text-xl font-bold text-gray-700 mt-2">{{ ficha.edad_evaluado }} años</p>
+            </div>
+            <div>
+                <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Familiares</p>
+                <p class="text-xl font-bold text-gray-700 mt-2">{{ ficha.num_integrantes }}</p>
+            </div>
+            <div class="pl-4">
+                <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Institución</p>
+                <p class="text-sm font-bold text-gray-700 mt-2 ">{{ ficha.institucion.nombre|default:"-" }}</p>
+            </div>
+        </div>
+    </div>
+
+    {% if user.rol == 'SUPERVISOR' %}
+    <!-- prueba -->
+   <section class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mt-8 break-inside-avoid shadow-indigo-50/50">
+    <div class="bg-gray-50 px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+        <h3 class="font-bold text-gray-800 uppercase text-[13px] md:text-sm flex items-center gap-2">
+            <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+            Historial de Auditoría y Cambios
+        </h3>
+        <span class="text-[10px] md:text-xs font-bold bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full shadow-sm">
+            {{ ficha_historial.count }} movimientos
+        </span>
+    </div>
+
+    <div class="p-6 bg-slate-50/30">
+        <div class="flow-root">
+            <ul role="list" class="-mb-8">
+                {% for registro in ficha_historial %}
+                <li>
+                    <div class="relative pb-8">
+                        {% if not forloop.last %}
+                        <span class="absolute top-5 left-5 -ml-px h-full w-0.5 bg-gray-200" aria-hidden="true"></span>
+                        {% endif %}
+                        <div class="relative flex items-start space-x-4">
+                            <div class="relative">
+                                <span class="h-10 w-10 rounded-full bg-white border-2 border-indigo-100 flex items-center justify-center ring-8 ring-slate-50">
+                                    <span class="text-indigo-600 font-bold text-xs uppercase">{{ registro.usuario|iniciales }}</span>
+                                </span>
+                            </div>
+
+                            <div class="min-w-0 flex-1 bg-white rounded-xl border border-gray-100 p-4 shadow-sm hover:shadow-md transition-shadow">
+                                <div class="flex justify-between items-start mb-2">
+                                    <div>
+                                        <p class="text-sm font-bold text-gray-900">
+                                            {{ registro.usuario|default:registro.usuario.username|title }}
+                                        </p>
+                                        <p class="text-xs text-indigo-500 font-semibold uppercase tracking-wider">{{ registro.accion }}</p>
+                                    </div>
+                                    <div class="text-right">
+                                        <time class="text-[11px] text-gray-400 font-medium block uppercase">
+                                            {{ registro.fecha_edicion|date:"d M, Y" }}
+                                        </time>
+                                        <span class="text-[10px] text-gray-300 font-mono">{{ registro.fecha_edicion|date:"h:i a" }}</span>
+                                    </div>
+                                </div>
+
+                                <div class="mt-3 bg-slate-50 rounded-lg p-3 border border-slate-100">
+                                    <p class="text-[11px] font-bold text-slate-400 uppercase mb-2 flex items-center gap-1">
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                        Detalle de la intervención:
+                                    </p>
+                                    <div class="text-xs text-gray-600 leading-relaxed space-y-1">
+                                        {# Usamos linebreaksbr para respetar los \n del backend #}
+                                        {{ registro.detalles|linebreaksbr }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+                {% empty %}
+                <div class="text-center py-12">
+                    <svg class="mx-auto h-12 w-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                    <p class="mt-2 text-sm text-gray-500 italic">Este expediente no ha tenido modificaciones desde su registro original.</p>
+                </div>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</section>
+    <!-- end prueba -->
+    {% endif %}
+    <div class="space-y-8">
+
+        <section class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div class="bg-gray-50 px-6 py-3 border-b border-gray-200">
+                <h3 class="font-bold text-gray-800 uppercase text-[13px] md:text-sm">1. Datos Personales y Contacto</h3>
+            </div>
+            <div class="p-6 grid grid-cols-1 md:grid-cols-3 gap-6 text-[12px] md:text-sm">
+                <div class="space-y-1">
+                    <label class="text-[12px] md:text-xs text-gray-400 font-bold uppercase">Estudiante</label>
+                    <p class="font-medium text-gray-900">{{ ficha.apellidos_evaluado }}, {{ ficha.nombres_evaluado }}
+                    </p>
+                </div>
+                <div class="space-y-1">
+                    <label class="text-[12px] md:text-xs text-gray-400 font-bold uppercase">DNI</label>
+                    <p class="font-medium text-gray-900">{{ ficha.dni_evaluado }}</p>
+                </div>
+                <div class="space-y-1">
+                    <label class="text-[12px] md:text-xs text-gray-400 font-bold uppercase">Nacimiento</label>
+                    <p class="font-medium text-gray-900">{{ ficha.fecha_nacimiento|date:"d/m/Y" }}</p>
+                </div>
+
+                <div class="md:col-span-3 border-t border-gray-100 pt-4 mt-2">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-1">
+                            <label class="text-[12px] md:text-xs text-gray-400 font-bold uppercase">Dirección</label>
+                            <p class="font-medium text-gray-900">{{ ficha.direccion_domicilio }}</p>
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-[12px] md:text-xs text-gray-400 font-bold uppercase">Ubicación
+                                (Ubigeo)</label>
+                            <p class="font-medium text-gray-900">
+                                {{ ficha.ubigeo_departamento.nombre }} / {{ ficha.ubigeo_provincia.nombre }} /
+                                {{ficha.ubigeo_distrito.nombre }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div class="bg-gray-50 px-6 py-3 border-b border-gray-200 flex justify-between items-center">
+                <h3 class="font-bold text-gray-800 uppercase text-[13px] md:text-sm">2. Estructura Familiar</h3>
+                <span class="text-[10px] md:text-xs font-bold bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                    Jefe: {{ficha.jefe_hogar }}</span>
+            </div>
+
+            <div class="w-full">
+                <div class="hidden md:block overflow-hidden rounded-lg border border-gray-200">
+                    <table class="w-full text-sm text-left">
+                        <thead
+                            class="bg-gray-50 text-gray-500 font-bold uppercase text-xs tracking-wider border-b border-gray-200">
+                            <tr>
+                                <th class="px-6 py-3">Nombre</th>
+                                <th class="px-6 py-3">Parentesco</th>
+                                <th class="px-6 py-3 text-center">Edad</th>
+                                <th class="px-6 py-3">Ocupación</th>
+                                <th class="px-6 py-3 text-right">Ingresos</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100 bg-white">
+                            {% for fam in familiares %}
+                            <tr class="hover:bg-blue-50/50 transition-colors">
+                                <td class="px-6 py-4 font-semibold text-gray-900">{{ fam.nombres }}</td>
+                                <td class="px-6 py-4 text-gray-600">{{ fam.parentesco }}</td>
+                                <td class="px-6 py-4 text-center text-gray-600">{{ fam.edad }}</td>
+                                <td class="px-6 py-4 text-gray-600">{{ fam.ocupacion }}</td>
+                                <td class="px-6 py-4 text-right font-medium text-gray-900">S/ {{ fam.ingresos }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="px-6 py-8 text-center text-gray-400 italic bg-gray-50">
+                                    No se registraron familiares.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="md:hidden space-y-4">
+                    {% for fam in familiares %}
+                    <div
+                        class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm hover:border-blue-300 transition-colors">
+                        <div class="flex justify-between items-start mb-3 pb-3 border-b border-gray-100">
+                            <div>
+                                <h4 class="font-bold text-gray-900 text-sm uppercase">{{ fam.nombres }}</h4>
+                                <span
+                                    class="inline-flex items-center px-2 py-0.5 mt-1 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                                    {{ fam.parentesco }}
+                                </span>
+                            </div>
+                            <div class="text-right">
+                                <span class="block text-xs text-gray-400 uppercase font-bold">Edad</span>
+                                <span class="text-sm font-bold text-gray-700">{{ fam.edad }} años</span>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4 text-sm">
+                            <div>
+                                <span class="block text-xs text-gray-400 uppercase font-bold mb-0.5">Ocupación</span>
+                                <p class="text-gray-700 truncate">{{ fam.ocupacion|default:"-" }}</p>
+                            </div>
+                            <div class="text-right">
+                                <span class="block text-xs text-gray-400 uppercase font-bold mb-0.5">Ingresos</span>
+                                <p class="font-bold text-green-600">S/ {{ fam.ingresos }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div
+                        class="p-6 text-center text-gray-400 italic bg-gray-50 rounded-xl border border-gray-200 border-dashed">
+                        No se registraron familiares.
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% if ficha.observaciones_familia %}
+            <div class="p-4 bg-yellow-50 border-t border-yellow-100 text-sm text-yellow-800">
+                <strong>Observaciones:</strong> {{ ficha.observaciones_familia }}
+            </div>
+            {% endif %}
+        </section>
+
+        {% regroup respuestas by pregunta.dimension as dimensiones_list %}
+
+        {% for dimension in dimensiones_list %}
+        <section class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden break-inside-avoid">
+            <div class="bg-blue-600 px-6 py-3 border-b border-blue-700">
+                <h3 class="font-bold text-white uppercase text-sm">{{ dimension.grouper.nombre }}</h3>
+            </div>
+            <div class="divide-y divide-gray-100">
+                {% for respuesta in dimension.list %}
+                <div
+                    class="px-6 py-4 flex flex-col md:flex-row md:justify-between md:items-center gap-2 hover:bg-gray-50">
+                    <div class="flex gap-3 md:w-3/4">
+                        <span class="text-[12px] md:text-xs font-bold text-gray-400 mt-1 min-w-[20px]">{{respuesta.pregunta.orden}}.</span>
+                        <p class=" text-[12px] md:text-sm text-gray-700 font-medium">{{ respuesta.pregunta.enunciado }}
+                        </p>
+                    </div>
+                    <div class="w-full md:w-1/4 flex justify-end">
+                        <span
+                            class=" text-[12px] md:text-sm inline-flex items-center px-3 py-1 rounded-lg font-bold bg-blue-50 text-blue-700 border border-blue-100 shadow-sm">
+                            {{ respuesta.opcion_seleccionada.texto }}
+                            <span class="ml-2  text-[12px] md:text-xs font-normal text-blue-400">({{respuesta.puntaje_obtenido }}
+                                pts)</span>
+                        </span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+        {% endfor %}
+
+    </div>
+</div>
+{% endblock %}
