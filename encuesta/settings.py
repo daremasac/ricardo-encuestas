@@ -185,6 +185,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CSRF_TRUSTED_ORIGINS = [
     'http://161.132.45.71',
     'https://161.132.45.71',
+    'http://sigerp.inkillay.com',
+    'https://sigerp.inkillay.com',
 ]
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')

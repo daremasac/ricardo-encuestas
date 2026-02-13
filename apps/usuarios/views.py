@@ -39,10 +39,10 @@ def home(request):
         return redirect('mis_encuestas')
     
     elif user.rol == 'SUPERVISOR':
-        return redirect('listar_mi_equipo')
+        return redirect('dashboard_admin')
     
     elif user.rol == 'ADMIN':
-        return redirect('dashboard_admin') # O 'lista_usuarios' según prefieras
+        return redirect('lista_usuarios') # O 'lista_usuarios' según prefieras
     
     # Si por alguna razón no tiene rol, lo mandamos al login o una página neutral
     return redirect('login')
